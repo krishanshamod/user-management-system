@@ -11,6 +11,7 @@
 	<groupId>com.uok</groupId>
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<name>backend</name>
 	<description>Backend for user management system</description>
 	<properties>
@@ -40,6 +41,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>user-management-system</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

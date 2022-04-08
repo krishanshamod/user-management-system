@@ -3,6 +3,7 @@ package com.uok.backend.services;
 import com.uok.backend.domains.User;
 import com.uok.backend.domains.UserSignInDetails;
 import com.uok.backend.repositories.UserRepository;
+import com.uok.backend.security.PasswordGenerator.HashedPasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,7 @@ public class UmsUserService implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private HashingService hashingService;
+    private HashedPasswordGenerator hashedPasswordGenerator;
 
 
     @Override
@@ -22,7 +23,7 @@ public class UmsUserService implements UserService {
         String password = user.getPassword();
 
         // hash the password and set it to the user
-        String hashedPassword = hashingService.hash(password);
+        String hashedPassword = hashedPasswordGenerator.hash(password);
         user.setPassword(hashedPassword);
 
         // check if the user already exists or not and add user to the database
@@ -46,7 +47,7 @@ public class UmsUserService implements UserService {
             String hashedPassword = userRepository.findByEmail(email).getPassword();
 
             // check if the password matches
-            boolean isPasswordCorrect = hashingService.verify(password, hashedPassword);
+            boolean isPasswordCorrect = hashedPasswordGenerator.verify(password, hashedPassword);
 
             if (isPasswordCorrect) {
                 return true;

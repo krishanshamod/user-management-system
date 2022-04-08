@@ -1,11 +1,11 @@
-package com.uok.backend.services;
+package com.uok.backend.security.PasswordGenerator;
 
 import org.springframework.stereotype.Component;
 
 import java.security.NoSuchAlgorithmException;
 
 @Component
-public class SHA256HashingService implements HashingService {
+public class SHA256HashedPasswordGenerator implements HashedPasswordGenerator {
     @Override
     public String hash(String input) {
         try {

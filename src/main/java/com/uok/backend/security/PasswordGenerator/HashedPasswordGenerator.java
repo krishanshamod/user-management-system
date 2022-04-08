@@ -1,6 +1,6 @@
-package com.uok.backend.services;
+package com.uok.backend.security.PasswordGenerator;
 
-public interface HashingService {
+public interface HashedPasswordGenerator {
     public String hash(String input);
     public boolean verify(String input, String hash);
 }

@@ -12,7 +12,7 @@ public class JwtTokenGenerator implements TokenGenerator {
     private String secret;
 
     @Override
-    public String generateToken(String email, String firstName, String lastName, String role) {
+    public String generate(String email, String firstName, String lastName, String role) {
 
         // Generate token
         String token = Jwts.builder()

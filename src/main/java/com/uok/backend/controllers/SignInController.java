@@ -14,7 +14,7 @@ public class SignInController {
     private UserService userService;
 
     @PostMapping("/signin")
-    public Boolean signIn(@RequestBody UserSignInDetails userSignInDetails) {
+    public String signIn(@RequestBody UserSignInDetails userSignInDetails) {
         return userService.signIn(userSignInDetails);
     }
 }

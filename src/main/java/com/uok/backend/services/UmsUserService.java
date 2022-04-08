@@ -4,6 +4,7 @@ import com.uok.backend.domains.User;
 import com.uok.backend.domains.UserSignInDetails;
 import com.uok.backend.repositories.UserRepository;
 import com.uok.backend.security.PasswordGenerator.HashedPasswordGenerator;
+import com.uok.backend.security.TokenGenerator.TokenGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,9 @@ public class UmsUserService implements UserService {
 
     @Autowired
     private HashedPasswordGenerator hashedPasswordGenerator;
+
+    @Autowired
+    private TokenGenerator tokenGenerator;
 
 
     @Override
@@ -36,7 +40,7 @@ public class UmsUserService implements UserService {
     }
 
     @Override
-    public boolean signIn(UserSignInDetails userSignInDetails) {
+    public String signIn(UserSignInDetails userSignInDetails) {
         String email = userSignInDetails.getEmail();
         String password = userSignInDetails.getPassword();
 
@@ -50,15 +54,22 @@ public class UmsUserService implements UserService {
             boolean isPasswordCorrect = hashedPasswordGenerator.verify(password, hashedPassword);
 
             if (isPasswordCorrect) {
-                return true;
+
+                // generate token
+                String token = tokenGenerator.generate(
+                        userRepository.findByEmail(email).getEmail(),
+                        userRepository.findByEmail(email).getFirstName(),
+                        userRepository.findByEmail(email).getLastName(),
+                        userRepository.findByEmail(email).getRole()
+                );
+                return token;
+
             } else {
-                return false;
+                return "";
             }
-
         } else {
-            return false;
+            return "";
         }
-
     }
 
 }

@@ -1,20 +1,20 @@
-package com.uok.backend.api;
+package com.uok.backend.controllers;
 
-import com.uok.backend.domain.User;
-import com.uok.backend.service.UserService;
+import com.uok.backend.domains.UserSignInDetails;
+import com.uok.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class SignupController {
+public class SignInController {
 
     @Autowired
     private UserService userService;
 
-    @PostMapping("/signup")
-    public Boolean signup(@RequestBody User user){
-        return userService.signup(user);
+    @PostMapping("/signin")
+    public Boolean signIn(@RequestBody UserSignInDetails userSignInDetails) {
+        return userService.signIn(userSignInDetails);
     }
 }

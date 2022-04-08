@@ -1,4 +1,4 @@
-package com.uok.backend.service;
+package com.uok.backend.services;
 
 public interface HashingService {
     public String hash(String input);

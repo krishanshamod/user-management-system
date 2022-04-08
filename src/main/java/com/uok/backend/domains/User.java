@@ -1,4 +1,4 @@
-package com.uok.backend.domain;
+package com.uok.backend.domains;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

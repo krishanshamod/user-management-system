@@ -1,4 +1,4 @@
-package com.uok.backend.service;
+package com.uok.backend.services;
 
 import org.springframework.stereotype.Component;
 

@@ -19,6 +19,9 @@ public class User {
     @Column(name = "password", nullable = false, columnDefinition = "TEXT")
     private String password;
 
+    public User() {
+    }
+
     public User(String email, String firstName, String lastName, String role, String password) {
         this.email = email;
         this.firstName = firstName;

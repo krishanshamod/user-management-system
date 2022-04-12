@@ -1,13 +1,13 @@
 package com.uok.backend.domains;
 
-public class JwtRequest {
+public class SignInRequest {
     private String email;
     private String password;
 
-    public JwtRequest() {
+    public SignInRequest() {
     }
 
-    public JwtRequest(String email, String password) {
+    public SignInRequest(String email, String password) {
         this.email = email;
         this.password = password;
     }

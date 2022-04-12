@@ -1,8 +1,8 @@
 package com.uok.backend.services;
 
-import com.uok.backend.domains.JwtResponse;
+import com.uok.backend.domains.SignInResponse;
 import com.uok.backend.domains.User;
-import com.uok.backend.domains.JwtRequest;
+import com.uok.backend.domains.SignInRequest;
 import com.uok.backend.repositories.UserRepository;
 import com.uok.backend.security.PasswordGenerator.HashedPasswordGenerator;
 import com.uok.backend.security.TokenGenerator.TokenGenerator;
@@ -46,9 +46,9 @@ public class UmsUserService implements UserService {
     }
 
     @Override
-    public JwtResponse signIn(HttpServletResponse response, JwtRequest jwtRequest) {
-        String email = jwtRequest.getEmail();
-        String password = jwtRequest.getPassword();
+    public SignInResponse signIn(HttpServletResponse response, SignInRequest signInRequest) {
+        String email = signInRequest.getEmail();
+        String password = signInRequest.getPassword();
 
         // check if the user exists or not
         if (userRepository.findByEmail(email) != null) {
@@ -68,7 +68,7 @@ public class UmsUserService implements UserService {
                         userRepository.findByEmail(email).getLastName(),
                         userRepository.findByEmail(email).getRole()
                 );
-                return new JwtResponse(token);
+                return new SignInResponse(token);
 
             } else {
                 response.setStatus(401);

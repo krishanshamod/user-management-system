@@ -1,9 +1,9 @@
 package com.uok.backend.domains;
 
-public class JwtResponse {
+public class SignInResponse {
     private String token;
 
-    public JwtResponse(String token) {
+    public SignInResponse(String token) {
         this.token = token;
     }
 

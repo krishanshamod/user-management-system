@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 public class SignUpController {
 
@@ -14,7 +16,7 @@ public class SignUpController {
     private UserService userService;
 
     @PostMapping("/signup")
-    public Boolean signUp(@RequestBody User user){
-        return userService.signUp(user);
+    public Boolean signUp(HttpServletResponse response, @RequestBody User user){
+        return userService.signUp(response, user);
     }
 }

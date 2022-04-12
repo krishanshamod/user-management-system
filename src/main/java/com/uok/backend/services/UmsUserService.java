@@ -9,6 +9,8 @@ import com.uok.backend.security.TokenGenerator.TokenGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Component
 public class UmsUserService implements UserService {
 
@@ -23,7 +25,7 @@ public class UmsUserService implements UserService {
 
 
     @Override
-    public boolean signUp(User user) {
+    public boolean signUp(HttpServletResponse response, User user) {
         String email = user.getEmail();
         String password = user.getPassword();
 
@@ -34,14 +36,17 @@ public class UmsUserService implements UserService {
         // check if the user already exists or not and add user to the database
         if (userRepository.findByEmail(email) == null) {
             userRepository.save(user);
+            response.setStatus(200);
             return true;
         } else {
+            response.setStatus(400);
+            response.setHeader("Error", "User already exists");
             return false;
         }
     }
 
     @Override
-    public JwtResponse signIn(JwtRequest jwtRequest) {
+    public JwtResponse signIn(HttpServletResponse response, JwtRequest jwtRequest) {
         String email = jwtRequest.getEmail();
         String password = jwtRequest.getPassword();
 
@@ -66,9 +71,13 @@ public class UmsUserService implements UserService {
                 return new JwtResponse(token);
 
             } else {
+                response.setStatus(401);
+                response.setHeader("Error", "Invalid password");
                 return null;
             }
         } else {
+            response.setStatus(401);
+            response.setHeader("Error", "User does not exist");
             return null;
         }
     }

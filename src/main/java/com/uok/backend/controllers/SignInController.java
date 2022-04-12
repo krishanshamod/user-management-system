@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 public class SignInController {
 
@@ -15,7 +17,7 @@ public class SignInController {
     private UserService userService;
 
     @PostMapping("/signin")
-    public JwtResponse signIn(@RequestBody JwtRequest jwtRequest) {
-        return userService.signIn(jwtRequest);
+    public JwtResponse signIn(HttpServletResponse response, @RequestBody JwtRequest jwtRequest) {
+        return userService.signIn(response, jwtRequest);
     }
 }

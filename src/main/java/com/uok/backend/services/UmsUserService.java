@@ -1,5 +1,6 @@
 package com.uok.backend.services;
 
+import com.uok.backend.domains.JwtResponse;
 import com.uok.backend.domains.User;
 import com.uok.backend.domains.JwtRequest;
 import com.uok.backend.repositories.UserRepository;
@@ -40,7 +41,7 @@ public class UmsUserService implements UserService {
     }
 
     @Override
-    public String signIn(JwtRequest jwtRequest) {
+    public JwtResponse signIn(JwtRequest jwtRequest) {
         String email = jwtRequest.getEmail();
         String password = jwtRequest.getPassword();
 
@@ -62,13 +63,13 @@ public class UmsUserService implements UserService {
                         userRepository.findByEmail(email).getLastName(),
                         userRepository.findByEmail(email).getRole()
                 );
-                return token;
+                return new JwtResponse(token);
 
             } else {
-                return "";
+                return null;
             }
         } else {
-            return "";
+            return null;
         }
     }
 

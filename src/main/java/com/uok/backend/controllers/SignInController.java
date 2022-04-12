@@ -1,6 +1,7 @@
 package com.uok.backend.controllers;
 
 import com.uok.backend.domains.JwtRequest;
+import com.uok.backend.domains.JwtResponse;
 import com.uok.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +15,7 @@ public class SignInController {
     private UserService userService;
 
     @PostMapping("/signin")
-    public String signIn(@RequestBody JwtRequest jwtRequest) {
+    public JwtResponse signIn(@RequestBody JwtRequest jwtRequest) {
         return userService.signIn(jwtRequest);
     }
 }

@@ -1,5 +1,6 @@
 package com.uok.backend.controllers;
 
+import com.uok.backend.domains.SignUpResponse;
 import com.uok.backend.domains.User;
 import com.uok.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ public class SignUpController {
     private UserService userService;
 
     @PostMapping("/signup")
-    public Boolean signUp(HttpServletResponse response, @RequestBody User user){
+    public SignUpResponse signUp(HttpServletResponse response, @RequestBody User user){
         return userService.signUp(response, user);
     }
 }

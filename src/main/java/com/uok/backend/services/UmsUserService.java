@@ -1,6 +1,7 @@
 package com.uok.backend.services;
 
 import com.uok.backend.domains.SignInResponse;
+import com.uok.backend.domains.SignUpResponse;
 import com.uok.backend.domains.User;
 import com.uok.backend.domains.SignInRequest;
 import com.uok.backend.repositories.UserRepository;
@@ -25,7 +26,7 @@ public class UmsUserService implements UserService {
 
 
     @Override
-    public boolean signUp(HttpServletResponse response, User user) {
+    public SignUpResponse signUp(HttpServletResponse response, User user) {
         String email = user.getEmail();
         String password = user.getPassword();
 
@@ -37,11 +38,11 @@ public class UmsUserService implements UserService {
         if (userRepository.findByEmail(email) == null) {
             userRepository.save(user);
             response.setStatus(200);
-            return true;
+            return new SignUpResponse(true);
         } else {
             response.setStatus(400);
             response.setHeader("Error", "User already exists");
-            return false;
+            return new SignUpResponse(false);
         }
     }
 

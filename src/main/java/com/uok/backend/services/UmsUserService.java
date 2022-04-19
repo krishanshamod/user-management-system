@@ -4,10 +4,12 @@ import com.uok.backend.domains.SignInResponse;
 import com.uok.backend.domains.SignUpResponse;
 import com.uok.backend.domains.User;
 import com.uok.backend.domains.SignInRequest;
+import com.uok.backend.exceptions.FailedLoginException;
 import com.uok.backend.repositories.UserRepository;
 import com.uok.backend.security.PasswordGenerator.HashedPasswordGenerator;
 import com.uok.backend.security.TokenGenerator.TokenGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletResponse;
@@ -47,40 +49,46 @@ public class UmsUserService implements UserService {
     }
 
     @Override
-    public SignInResponse signIn(HttpServletResponse response, SignInRequest signInRequest) {
+    public ResponseEntity signIn(SignInRequest signInRequest) {
         String email = signInRequest.getEmail();
         String password = signInRequest.getPassword();
 
-        // check if the user exists or not
-        if (userRepository.findByEmail(email) != null) {
+        try {
 
-            // get hashed password from the database
-            String hashedPassword = userRepository.findByEmail(email).getPassword();
+            // check if the user exists or not
+            if (userRepository.findByEmail(email) != null) {
 
-            // check if the password matches
-            boolean isPasswordCorrect = hashedPasswordGenerator.verify(password, hashedPassword);
+                // get hashed password from the database
+                String hashedPassword = userRepository.findByEmail(email).getPassword();
 
-            if (isPasswordCorrect) {
+                // check if the password matches
+                boolean isPasswordCorrect = hashedPasswordGenerator.verify(password, hashedPassword);
 
-                // generate token
-                String token = tokenGenerator.generate(
-                        userRepository.findByEmail(email).getEmail(),
-                        userRepository.findByEmail(email).getFirstName(),
-                        userRepository.findByEmail(email).getLastName(),
-                        userRepository.findByEmail(email).getRole()
-                );
-                return new SignInResponse(token);
+                if (isPasswordCorrect) {
 
+                    // generate token
+                    String token = tokenGenerator.generate(
+                            userRepository.findByEmail(email).getEmail(),
+                            userRepository.findByEmail(email).getFirstName(),
+                            userRepository.findByEmail(email).getLastName(),
+                            userRepository.findByEmail(email).getRole()
+                    );
+
+                    return ResponseEntity.ok(new SignInResponse(token));
+
+                } else {
+                    throw new FailedLoginException("Invalid password");
+                }
             } else {
-                response.setStatus(401);
-                response.setHeader("Error", "Invalid password");
-                return null;
+                throw new FailedLoginException("User does not exist");
             }
-        } else {
-            response.setStatus(401);
-            response.setHeader("Error", "User does not exist");
-            return null;
+
+        } catch (FailedLoginException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(null);
         }
+
+
     }
 
 }

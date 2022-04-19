@@ -1,10 +1,10 @@
 package com.uok.backend.services;
 
 import com.uok.backend.domains.SignInResponse;
-import com.uok.backend.domains.SignUpResponse;
 import com.uok.backend.domains.User;
 import com.uok.backend.domains.SignInRequest;
 import com.uok.backend.exceptions.FailedLoginException;
+import com.uok.backend.exceptions.FailedRegistrationException;
 import com.uok.backend.repositories.UserRepository;
 import com.uok.backend.security.PasswordGenerator.HashedPasswordGenerator;
 import com.uok.backend.security.TokenGenerator.TokenGenerator;
@@ -28,23 +28,26 @@ public class UmsUserService implements UserService {
 
 
     @Override
-    public SignUpResponse signUp(HttpServletResponse response, User user) {
+    public ResponseEntity signUp(User user) {
         String email = user.getEmail();
         String password = user.getPassword();
 
-        // hash the password and set it to the user
-        String hashedPassword = hashedPasswordGenerator.hash(password);
-        user.setPassword(hashedPassword);
+        try {
+            // hash the password and set it to the user
+            String hashedPassword = hashedPasswordGenerator.hash(password);
+            user.setPassword(hashedPassword);
 
-        // check if the user already exists or not and add user to the database
-        if (userRepository.findByEmail(email) == null) {
-            userRepository.save(user);
-            response.setStatus(200);
-            return new SignUpResponse(true);
-        } else {
-            response.setStatus(400);
-            response.setHeader("Error", "User already exists");
-            return new SignUpResponse(false);
+            // check if the user already exists or not and add user to the database
+            if (userRepository.findByEmail(email) == null) {
+                userRepository.save(user);
+                return ResponseEntity.ok(null);
+            } else {
+                throw new FailedRegistrationException("User already exists");
+            }
+
+        } catch (FailedRegistrationException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(null);
         }
     }
 
@@ -87,8 +90,5 @@ public class UmsUserService implements UserService {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(null);
         }
-
-
     }
-
 }

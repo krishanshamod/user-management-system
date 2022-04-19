@@ -3,6 +3,7 @@ package com.uok.backend.services;
 import com.uok.backend.domains.SignInResponse;
 import com.uok.backend.domains.User;
 import com.uok.backend.domains.SignInRequest;
+import com.uok.backend.exceptions.DataMissingException;
 import com.uok.backend.exceptions.FailedLoginException;
 import com.uok.backend.exceptions.FailedRegistrationException;
 import com.uok.backend.repositories.UserRepository;
@@ -17,14 +18,19 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class UmsUserService implements UserService {
 
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
     private HashedPasswordGenerator hashedPasswordGenerator;
 
-    @Autowired
     private TokenGenerator tokenGenerator;
+
+    @Autowired
+    public UmsUserService(UserRepository userRepository, HashedPasswordGenerator hashedPasswordGenerator
+            , TokenGenerator tokenGenerator) {
+        this.userRepository = userRepository;
+        this.hashedPasswordGenerator = hashedPasswordGenerator;
+        this.tokenGenerator = tokenGenerator;
+    }
 
 
     @Override
@@ -33,6 +39,12 @@ public class UmsUserService implements UserService {
         String password = user.getPassword();
 
         try {
+            // check all data is received or not
+            if (user.getEmail() == null || user.getPassword() == null
+                    || user.getFirstName() == null || user.getLastName() == null) {
+                throw new DataMissingException("Input Data missing");
+            }
+
             // hash the password and set it to the user
             String hashedPassword = hashedPasswordGenerator.hash(password);
             user.setPassword(hashedPassword);
@@ -48,6 +60,9 @@ public class UmsUserService implements UserService {
         } catch (FailedRegistrationException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(null);
+        } catch (DataMissingException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(null);
         }
     }
 
@@ -57,6 +72,10 @@ public class UmsUserService implements UserService {
         String password = signInRequest.getPassword();
 
         try {
+            // check all data is received or not
+            if (email == null || password == null) {
+                throw new DataMissingException("Email or password is missing");
+            }
 
             // check if the user exists or not
             if (userRepository.findByEmail(email) != null) {
@@ -89,6 +108,9 @@ public class UmsUserService implements UserService {
         } catch (FailedLoginException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(null);
+        } catch (DataMissingException e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(null);
         }
     }
 }

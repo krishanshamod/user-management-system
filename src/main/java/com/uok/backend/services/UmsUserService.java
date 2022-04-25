@@ -45,22 +45,21 @@ public class UmsUserService implements UserService {
                 throw new DataMissingException("Input Data missing");
             }
 
+            // check if the user already exists or not
+            if (userRepository.findByEmail(email) != null) {
+                throw new FailedRegistrationException("User already exists");
+            }
+
             // hash the password and set it to the user
             String hashedPassword = hashedPasswordGenerator.hash(password);
             user.setPassword(hashedPassword);
 
-            // check if the user already exists or not and add user to the database
-            if (userRepository.findByEmail(email) == null) {
-                userRepository.save(user);
-                return ResponseEntity.ok(null);
-            } else {
-                throw new FailedRegistrationException("User already exists");
-            }
+            // add user to the database
+            userRepository.save(user);
 
-        } catch (FailedRegistrationException e) {
-            System.out.println(e.getMessage());
-            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(null);
-        } catch (DataMissingException e) {
+            return ResponseEntity.ok(null);
+
+        } catch (FailedRegistrationException | DataMissingException e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(null);
         }

@@ -66,11 +66,11 @@ public class UmsUserService implements UserService {
             // add user to the database
             userRepository.save(user);
 
-            return ResponseEntity.ok(null);
+            return ResponseEntity.ok().build();
 
         } catch (FailedRegistrationException | DataMissingException e) {
             logger.logException(e.getMessage());
-            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).build();
         }
     }
 
@@ -113,10 +113,10 @@ public class UmsUserService implements UserService {
 
         } catch (FailedLoginException e) {
             logger.logException(e.getMessage());
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(null);
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).build();
         } catch (DataMissingException e) {
             logger.logException(e.getMessage());
-            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpServletResponse.SC_BAD_REQUEST).build();
         }
     }
 }

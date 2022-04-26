@@ -44,9 +44,6 @@ public class UmsUserService implements UserService {
     @Override
     public ResponseEntity signUp(User user) {
 
-        // log api call
-        logger.logApiCall("signUp");
-
         String email = user.getEmail();
         String password = user.getPassword();
 
@@ -69,9 +66,6 @@ public class UmsUserService implements UserService {
             // add user to the database
             userRepository.save(user);
 
-            // log success message
-            logger.logSuccess("signUp");
-
             return ResponseEntity.ok(null);
 
         } catch (FailedRegistrationException | DataMissingException e) {
@@ -82,9 +76,6 @@ public class UmsUserService implements UserService {
 
     @Override
     public ResponseEntity signIn(SignInRequest signInRequest) {
-
-        // log api call
-        logger.logApiCall("signIn");
 
         String email = signInRequest.getEmail();
         String password = signInRequest.getPassword();
@@ -117,9 +108,6 @@ public class UmsUserService implements UserService {
                     userRepository.findByEmail(email).getLastName(),
                     userRepository.findByEmail(email).getRole()
             );
-
-            // log success message
-            logger.logSuccess("signIn");
 
             return ResponseEntity.ok(new SignInResponse(token));
 

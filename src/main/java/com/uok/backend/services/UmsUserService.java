@@ -11,6 +11,7 @@ import com.uok.backend.security.PasswordGenerator.HashedPasswordGenerator;
 import com.uok.backend.security.TokenGenerator.TokenGenerator;
 import com.uok.backend.utils.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -75,6 +76,7 @@ public class UmsUserService implements UserService {
     }
 
     @Override
+    @Cacheable(cacheNames = {"userCache"}, key = "#signInRequest.email")
     public ResponseEntity signIn(SignInRequest signInRequest) {
 
         String email = signInRequest.getEmail();

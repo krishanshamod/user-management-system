@@ -76,7 +76,7 @@ public class UmsUserService implements UserService {
     }
 
     @Override
-    @Cacheable(cacheNames = {"userCache"}, key = "#signInRequest.email")
+    @Cacheable(cacheNames = {"userCache"}, key = "{#signInRequest.email, #signInRequest.password}")
     public ResponseEntity signIn(SignInRequest signInRequest) {
 
         String email = signInRequest.getEmail();

@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
+import javax.servlet.http.HttpServletResponse;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -81,7 +83,35 @@ class UmsUserServiceTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
+    @Test
+    void shouldThrowWhenUserAlreadyExistsWhenSigningUpAUser() {
+        //given
+        String password = "originalPassword";
+        User user = new User("pasandevin@gmail.com", "Pasan", "Jayawardene", "student", password);
 
+        String hashedPassword = "HashedPassword";
+
+        //when
+        when(userRepository.findByEmail(any())).thenReturn(user);
+        ResponseEntity response = underTest.signUp(user);
+
+        //then
+        ArgumentCaptor<String> emailArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(userRepository).findByEmail(emailArgumentCaptor.capture());
+        String capturedEmail = emailArgumentCaptor.getValue();
+        assertThat(capturedEmail).isEqualTo(user.getEmail());
+
+        ArgumentCaptor<String> errorMessageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(logger).logException(errorMessageCaptor.capture());
+        String capturedErrorMessage = errorMessageCaptor.getValue();
+        assertThat(capturedErrorMessage).isEqualTo("User already exists");
+
+        verify(hashedPasswordGenerator, never()).hash(any());
+
+        verify(userRepository, never()).save(any());
+
+        assertThat(response.getStatusCodeValue()).isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
+    }
 
     @Test
     void signIn() {

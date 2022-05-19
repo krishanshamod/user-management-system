@@ -43,6 +43,21 @@ class SignInControllerIntegrationTest {
 
     }
 
+    @Test
+    public void signIn_wrongDetailsGiven_shouldReturnHttp401() throws Exception {
+
+        SignInRequest signInRequest = new SignInRequest("test@test.com","wrongPassword");
+
+        HttpEntity<SignInRequest> entity = new HttpEntity<SignInRequest>(signInRequest, headers);
+
+        ResponseEntity response = restTemplate.exchange(
+                createURLWithPort("/signin"),
+                HttpMethod.POST, entity, String.class);
+
+        assertEquals(401, response.getStatusCodeValue());
+
+    }
+
     private String createURLWithPort(String uri) {
         return "http://localhost:" + port + uri;
     }

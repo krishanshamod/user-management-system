@@ -43,6 +43,21 @@ class SignUpControllerIntegrationTest {
 
     }
 
+    @Test
+    void signUp_existingUserDetailsGiven_shouldReturnHttp400() throws Exception {
+
+        User user = new User("test@test.com","firstName","lastName","student","test");
+
+        HttpEntity<User> entity = new HttpEntity<User>(user, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                createURLWithPort("/signup"),
+                HttpMethod.POST, entity, String.class);
+
+        assertEquals(400, response.getStatusCodeValue());
+
+    }
+
     private String createURLWithPort(String uri) {
         return "http://localhost:" + port + uri;
     }

@@ -6,6 +6,7 @@ import com.uok.backend.security.PasswordGenerator.HashedPasswordGenerator;
 import com.uok.backend.security.TokenGenerator.TokenGenerator;
 import com.uok.backend.utils.Logger;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,8 +20,8 @@ import org.springframework.test.context.ContextConfiguration;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
 
 @ContextConfiguration(classes = {UmsUserService.class})
 @ExtendWith(MockitoExtension.class)
@@ -72,8 +73,15 @@ class UmsUserServiceTest {
 
         assertThat(user.getPassword()).isEqualTo(hashedPassword);
 
+        ArgumentCaptor<User> userArgumentCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userArgumentCaptor.capture());
+        User capturedUser = userArgumentCaptor.getValue();
+        assertThat(capturedUser).isEqualTo(user);
+
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
+
+
 
     @Test
     void signIn() {

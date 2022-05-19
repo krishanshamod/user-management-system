@@ -89,8 +89,6 @@ class UmsUserServiceTest {
         String password = "originalPassword";
         User user = new User("pasandevin@gmail.com", "Pasan", "Jayawardene", "student", password);
 
-        String hashedPassword = "HashedPassword";
-
         //when
         when(userRepository.findByEmail(any())).thenReturn(user);
         ResponseEntity response = underTest.signUp(user);
@@ -105,6 +103,30 @@ class UmsUserServiceTest {
         verify(logger).logException(errorMessageCaptor.capture());
         String capturedErrorMessage = errorMessageCaptor.getValue();
         assertThat(capturedErrorMessage).isEqualTo("User already exists");
+
+        verify(hashedPasswordGenerator, never()).hash(any());
+
+        verify(userRepository, never()).save(any());
+
+        assertThat(response.getStatusCodeValue()).isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    @Test
+    void shouldThrowWhenUserEmailIsMissingWhenSigningUpAUser() {
+        //given
+        String password = "originalPassword";
+        User user = new User(null, "Pasan", "Jayawardene", "student", password);
+
+        //when
+        ResponseEntity response = underTest.signUp(user);
+
+        //then
+        ArgumentCaptor<String> errorMessageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(logger).logException(errorMessageCaptor.capture());
+        String capturedErrorMessage = errorMessageCaptor.getValue();
+        assertThat(capturedErrorMessage).isEqualTo("Input Data missing");
+
+        verify(userRepository, never()).findByEmail(any());
 
         verify(hashedPasswordGenerator, never()).hash(any());
 

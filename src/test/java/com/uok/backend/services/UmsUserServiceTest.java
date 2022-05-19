@@ -136,6 +136,54 @@ class UmsUserServiceTest {
     }
 
     @Test
+    void shouldThrowWhenFirstNameIsMissingWhenSigningUpAUser() {
+        //given
+        String password = "originalPassword";
+        User user = new User("pasandevin@gmail.com", null, "Jayawardene", "student", password);
+
+        //when
+        ResponseEntity response = underTest.signUp(user);
+
+        //then
+        ArgumentCaptor<String> errorMessageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(logger).logException(errorMessageCaptor.capture());
+        String capturedErrorMessage = errorMessageCaptor.getValue();
+        assertThat(capturedErrorMessage).isEqualTo("Input Data missing");
+
+        verify(userRepository, never()).findByEmail(any());
+
+        verify(hashedPasswordGenerator, never()).hash(any());
+
+        verify(userRepository, never()).save(any());
+
+        assertThat(response.getStatusCodeValue()).isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    @Test
+    void shouldThrowWhenLastNameIsMissingWhenSigningUpAUser() {
+        //given
+        String password = "originalPassword";
+        User user = new User("pasandevin@gmail.com", "Pasan", null, "student", password);
+
+        //when
+        ResponseEntity response = underTest.signUp(user);
+
+        //then
+        ArgumentCaptor<String> errorMessageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(logger).logException(errorMessageCaptor.capture());
+        String capturedErrorMessage = errorMessageCaptor.getValue();
+        assertThat(capturedErrorMessage).isEqualTo("Input Data missing");
+
+        verify(userRepository, never()).findByEmail(any());
+
+        verify(hashedPasswordGenerator, never()).hash(any());
+
+        verify(userRepository, never()).save(any());
+
+        assertThat(response.getStatusCodeValue()).isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    @Test
     void signIn() {
     }
 }

@@ -284,4 +284,83 @@ class UmsUserServiceTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
+
+    @Test
+    void shouldThrowWhenEmailIsMissingSignInAUser() {
+        //given
+        String password = "originalPassword";
+        String hashedPassword = "hashedPassword";
+        User user = new User(null, "Pasan", "Jayawardene", "student", hashedPassword);
+        SignInRequest signInRequest = new SignInRequest(user.getEmail(), password);
+
+        //when
+        ResponseEntity response = underTest.signIn(signInRequest);
+
+        //then
+        ArgumentCaptor<String> errorMessageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(logger).logException(errorMessageCaptor.capture());
+        String capturedErrorMessage = errorMessageCaptor.getValue();
+        assertThat(capturedErrorMessage).isEqualTo("Email or password is missing");
+
+        verify(userRepository, never()).findByEmail(any());
+
+        verify(hashedPasswordGenerator, never()).verify(any(), any());
+
+        verify(tokenGenerator, never()).generate(any(), any(), any(), any());
+
+        assertThat(response.getStatusCodeValue()).isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    @Test
+    void shouldThrowWhenPasswordIsMissingSignInAUser() {
+        //given
+        String password = null;
+        String hashedPassword = "hashedPassword";
+        User user = new User("pasandevin@gmail.com", "Pasan", "Jayawardene", "student", hashedPassword);
+        SignInRequest signInRequest = new SignInRequest(user.getEmail(), password);
+
+        //when
+        ResponseEntity response = underTest.signIn(signInRequest);
+
+        //then
+        ArgumentCaptor<String> errorMessageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(logger).logException(errorMessageCaptor.capture());
+        String capturedErrorMessage = errorMessageCaptor.getValue();
+        assertThat(capturedErrorMessage).isEqualTo("Email or password is missing");
+
+        verify(userRepository, never()).findByEmail(any());
+
+        verify(hashedPasswordGenerator, never()).verify(any(), any());
+
+        verify(tokenGenerator, never()).generate(any(), any(), any(), any());
+
+        assertThat(response.getStatusCodeValue()).isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    @Test
+    void shouldThrowWhenUserIsNotExistingWhenSigningInAUser() {
+        //given
+        String password = "originalPassword";
+        String hashedPassword = "hashedPassword";
+        User user = new User("pasandevin@gmail.com", "Pasan", "Jayawardene", "student", hashedPassword);
+        SignInRequest signInRequest = new SignInRequest(user.getEmail(), password);
+
+        //when
+        when(userRepository.findByEmail(any())).thenReturn(null);
+        ResponseEntity response = underTest.signIn(signInRequest);
+
+        //then
+        ArgumentCaptor<String> errorMessageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(logger).logException(errorMessageCaptor.capture());
+        String capturedErrorMessage = errorMessageCaptor.getValue();
+        assertThat(capturedErrorMessage).isEqualTo("User does not exist");
+
+        verify(userRepository, times(1)).findByEmail(any());
+
+        verify(hashedPasswordGenerator, never()).verify(any(), any());
+
+        verify(tokenGenerator, never()).generate(any(), any(), any(), any());
+
+        assertThat(response.getStatusCodeValue()).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
+    }
 }

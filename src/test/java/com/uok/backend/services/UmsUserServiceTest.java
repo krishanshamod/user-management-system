@@ -1,5 +1,7 @@
 package com.uok.backend.services;
 
+import com.uok.backend.domains.SignInRequest;
+import com.uok.backend.domains.SignInResponse;
 import com.uok.backend.domains.User;
 import com.uok.backend.repositories.UserRepository;
 import com.uok.backend.security.PasswordGenerator.HashedPasswordGenerator;
@@ -18,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
 import javax.servlet.http.HttpServletResponse;
+
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,7 +57,13 @@ class UmsUserServiceTest {
     void shouldSignUpAUser() {
         //given
         String password = "originalPassword";
-        User user = new User("pasandevin@gmail.com", "Pasan", "Jayawardene", "student", password);
+        User user = new User(
+                "pasandevin@gmail.com",
+                "Pasan",
+                "Jayawardene",
+                "student",
+                password
+        );
 
         String hashedPassword = "HashedPassword";
 
@@ -87,7 +97,13 @@ class UmsUserServiceTest {
     void shouldThrowWhenUserAlreadyExistsWhenSigningUpAUser() {
         //given
         String password = "originalPassword";
-        User user = new User("pasandevin@gmail.com", "Pasan", "Jayawardene", "student", password);
+        User user = new User(
+                "pasandevin@gmail.com",
+                "Pasan",
+                "Jayawardene",
+                "student",
+                password
+        );
 
         //when
         when(userRepository.findByEmail(any())).thenReturn(user);
@@ -139,7 +155,13 @@ class UmsUserServiceTest {
     void shouldThrowWhenFirstNameIsMissingWhenSigningUpAUser() {
         //given
         String password = "originalPassword";
-        User user = new User("pasandevin@gmail.com", null, "Jayawardene", "student", password);
+        User user = new User(
+                "pasandevin@gmail.com",
+                null,
+                "Jayawardene",
+                "student",
+                password
+        );
 
         //when
         ResponseEntity response = underTest.signUp(user);
@@ -186,7 +208,13 @@ class UmsUserServiceTest {
     @Test
     void shouldThrowWhenPasswordIsMissingWhenSigningUpAUser() {
         //given
-        User user = new User("pasandevin@gmail.com", "Pasan", "Jayawardene", "student", null);
+        User user = new User(
+                "pasandevin@gmail.com",
+                "Pasan",
+                "Jayawardene",
+                "student",
+                null
+        );
 
         //when
         ResponseEntity response = underTest.signUp(user);
@@ -207,6 +235,53 @@ class UmsUserServiceTest {
     }
 
     @Test
-    void signIn() {
+    void shouldSignInAUser() {
+        //given
+        String password = "originalPassword";
+        String hashedPassword = "hashedPassword";
+        String generatedToken = "generatedToken";
+        User user = new User("pasandevin@gmail.com", "Pasan", "Jayawardene", "student", hashedPassword);
+        SignInRequest signInRequest = new SignInRequest(user.getEmail(), password);
+
+        //when
+        when(userRepository.findByEmail(any())).thenReturn(user);
+        when(userRepository.findByEmail(any())).thenReturn(user);
+        when(hashedPasswordGenerator.verify(any(), any())).thenReturn(true);
+        when(tokenGenerator.generate(any(), any(), any(), any())).thenReturn(generatedToken);
+        ResponseEntity response = underTest.signIn(signInRequest);
+
+        //then
+        ArgumentCaptor<String> emailArgumentCaptor0 = ArgumentCaptor.forClass(String.class);
+        verify(userRepository, times(6)).findByEmail(emailArgumentCaptor0.capture());
+        String capturedEmail0 = emailArgumentCaptor0.getValue();
+        assertThat(capturedEmail0).isEqualTo(signInRequest.getEmail());
+
+        ArgumentCaptor<String> passwordArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> hashedPasswordArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(hashedPasswordGenerator).verify(passwordArgumentCaptor.capture(), hashedPasswordArgumentCaptor.capture());
+        String capturedPassword = passwordArgumentCaptor.getValue();
+        String capturedHashedPassword = hashedPasswordArgumentCaptor.getValue();
+        assertThat(capturedPassword).isEqualTo(signInRequest.getPassword());
+        assertThat(capturedHashedPassword).isEqualTo(user.getPassword());
+
+        ArgumentCaptor<String> emailArgumentCaptor1 = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> firstNameArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> lastNameArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> roleArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(tokenGenerator).generate(emailArgumentCaptor1.capture(), firstNameArgumentCaptor.capture(), lastNameArgumentCaptor.capture(), roleArgumentCaptor.capture());
+        String capturedEmail1 = emailArgumentCaptor1.getValue();
+        String capturedFirstName = firstNameArgumentCaptor.getValue();
+        String capturedLastName = lastNameArgumentCaptor.getValue();
+        String capturedRole = roleArgumentCaptor.getValue();
+        assertThat(capturedEmail1).isEqualTo(user.getEmail());
+        assertThat(capturedFirstName).isEqualTo(user.getFirstName());
+        assertThat(capturedLastName).isEqualTo(user.getLastName());
+        assertThat(capturedRole).isEqualTo(user.getRole());
+
+        Object body = response.getBody();
+        SignInResponse result = (SignInResponse) body;
+        assertThat(result.getToken()).isEqualTo(generatedToken);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 }

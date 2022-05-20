@@ -363,4 +363,39 @@ class UmsUserServiceTest {
 
         assertThat(response.getStatusCodeValue()).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
     }
+
+    @Test
+    void shouldThrowWhenPasswordIsIncorrectWhenSigningInAUser() {
+        //given
+        String password = "originalPassword";
+        String hashedPassword = "hashedPassword";
+        User user = new User("pasandevin@gmail.com", "Pasan", "Jayawardene", "student", hashedPassword);
+        SignInRequest signInRequest = new SignInRequest(user.getEmail(), password);
+
+        //when
+        when(userRepository.findByEmail(any())).thenReturn(user);
+        when(userRepository.findByEmail(any())).thenReturn(user);
+        when(hashedPasswordGenerator.verify(any(), any())).thenReturn(false);
+        ResponseEntity response = underTest.signIn(signInRequest);
+
+        //then
+        ArgumentCaptor<String> errorMessageCaptor = ArgumentCaptor.forClass(String.class);
+        verify(logger).logException(errorMessageCaptor.capture());
+        String capturedErrorMessage = errorMessageCaptor.getValue();
+        assertThat(capturedErrorMessage).isEqualTo("Invalid password");
+
+        verify(userRepository, times(2)).findByEmail(any());
+
+        ArgumentCaptor<String> passwordArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> hashedPasswordArgumentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(hashedPasswordGenerator).verify(passwordArgumentCaptor.capture(), hashedPasswordArgumentCaptor.capture());
+        String capturedPassword = passwordArgumentCaptor.getValue();
+        String capturedHashedPassword = hashedPasswordArgumentCaptor.getValue();
+        assertThat(capturedPassword).isEqualTo(signInRequest.getPassword());
+        assertThat(capturedHashedPassword).isEqualTo(user.getPassword());
+
+        verify(tokenGenerator, never()).generate(any(), any(), any(), any());
+
+        assertThat(response.getStatusCodeValue()).isEqualTo(HttpServletResponse.SC_UNAUTHORIZED);
+    }
 }

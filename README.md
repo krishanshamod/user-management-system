@@ -52,7 +52,12 @@ services:
         - ums_db_password= [database password]
         - token_secret= [jwt token secret]
 ```
-Note: You need you replace the environment variables with your own values.
+
+Note: You need you replace the environment variables with your own values. If you wish to use the localhost database then you need to replace the ports array lines with the following.
+
+```jsx
+network_mode: host
+```
 
 3. Locate to the docker-compose.yml file directory using terminal and execute this command.
 

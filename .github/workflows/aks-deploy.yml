@@ -1,0 +1,76 @@
+name: AKS Deployment
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  AZURE_CONTAINER_REGISTRY: "ks2000acr.azurecr.io"
+  CONTAINER_NAME: "ums"
+  RESOURCE_GROUP: "aks-labs-rg"
+  CLUSTER_NAME: "aks-cluster"
+  IMAGE_PULL_SECRET_NAME: "k8s-ums-secret"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    # Setup JDK 11
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+    
+    # Build with Maven
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+
+    # Logs in to the Azure Container Registry
+    - uses: Azure/docker-login@v1
+      with:
+        login-server: ${{ env.AZURE_CONTAINER_REGISTRY }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}   
+
+    # Build and push image to Azure Container Registry
+    - name: Build and push image to Azure Container Registry
+      run: |
+        docker build . -t ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+        docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+
+    # Retrieves your Azure Kubernetes Service cluster's kubeconfig file
+    - name: Get K8s context
+      uses: Azure/aks-set-context@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        cluster-name: ${{ env.CLUSTER_NAME }}
+        resource-group: ${{ env.RESOURCE_GROUP }}
+
+    # Create Image Pull Secret
+    - name: Create Image Pull Secret
+      uses: Azure/k8s-create-secret@v1
+      with:
+        container-registry-url: ${{ env.AZURE_CONTAINER_REGISTRY }}
+        container-registry-username: ${{ secrets.ACR_USERNAME }}
+        container-registry-password: ${{ secrets.ACR_PASSWORD }}
+        secret-name: ${{ env.IMAGE_PULL_SECRET_NAME }}
+
+    # Deploy to AKS
+    - name: Deploy to AKS
+      uses: Azure/k8s-deploy@v1
+      with:
+        manifests: |
+          manifests/deployment.yml
+          manifests/service.yml
+        images: |
+          ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.CONTAINER_NAME }}:${{ github.sha }}
+        imagepullsecrets: |
+          ${{ env.IMAGE_PULL_SECRET_NAME }}

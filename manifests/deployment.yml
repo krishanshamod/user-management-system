@@ -18,6 +18,7 @@ spec:
     spec:
       containers:
       - name: user-management-system
+        image: ks2000acr.azurecr.io/ums
         resources:
           limits:
             memory: "512Mi"

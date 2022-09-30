@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-management-system
+  namespace: default
+  labels:
+    app: ums
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ums
+  template:
+    metadata:
+      name: user-management-system
+      labels:
+        app: ums
+    spec:
+      containers:
+      - name: user-management-system
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8090
+        envFrom:
+        - configMapRef:
+            name: ums-config
